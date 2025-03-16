@@ -3,10 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Django stuff
-*.sqlite3
+# Django stuff (no SQLite)
 *.log
-db.sqlite3
 media/
 staticfiles/
 

@@ -1,3 +1,4 @@
+from rest_framework.filters import SearchFilter
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 from .models import Profile
@@ -36,7 +37,9 @@ class RegisterView(APIView):
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = []  # TODO: isAuthenticated
+    permission_classes = [IsAuthenticated]
+    filter_backends = [SearchFilter]
+    search_fields = ['title', 'content', 'tags__name']
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

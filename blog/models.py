@@ -12,25 +12,6 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    @property
-    def username(self):
-        return self.user.username
-
-    @property
-    def email(self):
-        return self.user.email
-
-    @property
-    def first_name(self):
-        return self.user.first_name
-
-    @property
-    def last_name(self):
-        return self.user.last_name
-
-    def __str__(self):
-        return f'{self.username}'
-
 
 class Article(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)

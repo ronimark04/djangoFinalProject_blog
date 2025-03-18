@@ -6,7 +6,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import RegisterSerializer
+from .serializers import *
+from rest_framework.permissions import IsAuthenticated
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -30,3 +31,12 @@ class RegisterView(APIView):
             'access': str(refresh.access_token),
             'refresh': str(refresh)
         }, status=status.HTTP_201_CREATED)
+
+
+class ArticleViewSet(viewsets.ModelViewSet):
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+    permission_classes = []  # TODO: isAuthenticated
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)

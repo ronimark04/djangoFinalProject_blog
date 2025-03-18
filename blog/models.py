@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from taggit.managers import TaggableManager
 
 
 class Profile(models.Model):
@@ -29,3 +30,11 @@ class Profile(models.Model):
 
     def __str__(self):
         return f'{self.username}'
+
+
+class Article(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    tags = TaggableManager()

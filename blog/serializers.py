@@ -1,8 +1,9 @@
-from .models import Profile
+from .models import *
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
+from rest_framework.serializers import SerializerMethodField
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -119,3 +120,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         Profile.objects.create(user=user, **profile_data)
 
         return user
+
+
+class ArticleSerializer(serializers.ModelSerializer):
+    author_id = SerializerMethodField()
+
+    class Meta:
+        model = Article
+        fields = '__all__'
+
+    def get_author_id(self, obj):
+        return obj.author.id

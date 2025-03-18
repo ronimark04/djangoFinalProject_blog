@@ -15,7 +15,30 @@ class Profile(models.Model):
 
 class Article(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=100, unique=True)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     tags = TaggableManager()
+
+    def __str__(self):
+        return self.title
+
+
+class Comment(models.Model):
+    article = models.ForeignKey(
+        Article, on_delete=models.CASCADE, related_name='comments')
+    content = models.TextField(max_length=1000)
+    author = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name='comments')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    reply_to = models.ForeignKey(
+        'self', on_delete=models.CASCADE, default=None, null=True, blank=True, related_name='replies')
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        author = self.author.username if self.author else "Anonymous"
+        return f'by {author} in reply to {self.article}: {self.content}'

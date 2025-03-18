@@ -159,3 +159,27 @@ class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     def get_author_id(self, obj):
         return obj.author.id
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    author_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = [
+            'id',
+            'article',
+            'content',
+            'author',        # Hidden field, filled automatically
+            'author_name',   # Readable name shown in response
+            'created_at',
+            'updated_at',
+            'reply_to',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+    def get_author_name(self, obj):
+        if obj.author:
+            return obj.author.username
+        return "Deleted User"

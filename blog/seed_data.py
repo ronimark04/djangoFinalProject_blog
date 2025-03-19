@@ -1,5 +1,5 @@
 from django.core.files import File
-from blog.models import Profile  # make sure this import is present
+from blog.models import Profile
 import os
 from django.contrib.auth.models import User, Group
 from blog.models import Article, Comment, Profile
@@ -91,12 +91,10 @@ def run_seed():
         user.groups.add(groups[spec['group']])
         users[spec['username']] = user
 
-        # Create or update Profile
         profile, _ = Profile.objects.get_or_create(user=user)
         profile.bio = spec['bio']
         profile.birth_date = spec['birth_date']
 
-        # Attach image if defined
         if spec['pic']:
             image_path = os.path.join(
                 'blog', 'static', 'seed_images', spec['pic'])
@@ -106,7 +104,6 @@ def run_seed():
                         spec['pic'], File(img_file), save=False)
         profile.save()
 
-    # === 4. Create Articles ===
     article_info = [
         {
             'title': 'Django Models and Migrations',
@@ -183,7 +180,6 @@ User profile management is a fundamental feature, and our implementation demonst
             print(f"Created article: {article.title}")
         articles.append(article)
 
-    # === 5. Comments and Replies ===
     member_users = [users['member1'], users['member2'], users['member3']]
     for i, article in enumerate(articles):
         comment1, _ = Comment.objects.get_or_create(

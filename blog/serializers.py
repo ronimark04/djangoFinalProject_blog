@@ -36,14 +36,12 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
 
-        # Create profile
         Profile.objects.create(user=user, **profile_data)
         return user
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile', {})
 
-        # === 1. Update User fields ===
         for attr, value in validated_data.items():
             if attr == 'password':
                 instance.set_password(value)
@@ -51,16 +49,13 @@ class UserSerializer(serializers.ModelSerializer):
                 setattr(instance, attr, value)
         instance.save()
 
-        # === 2. Update Profile fields ===
         profile, _ = Profile.objects.get_or_create(user=instance)
 
-        # 2a. Handle profile picture deletion if requested
         remove_pic = profile_data.pop('remove_profile_pic', False)
         if remove_pic and profile.profile_pic:
             profile.profile_pic.delete(save=False)
             profile.profile_pic = None
 
-        # 2b. Update other profile fields
         for attr, value in profile_data.items():
             setattr(profile, attr, value)
 
@@ -98,7 +93,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        # Extract optional profile info
         profile_data = {
             'bio': validated_data.pop('bio', ''),
             'birth_date': validated_data.pop('birth_date', None),
@@ -111,14 +105,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password')
         validated_data.pop('password2')
 
-        # Create user
         user = User(**validated_data)
         user.first_name = first_name
         user.last_name = last_name
         user.set_password(password)
         user.save()
 
-        # Create profile
         Profile.objects.create(user=user, **profile_data)
 
         return user
@@ -158,16 +150,12 @@ class TagField(TagListSerializerField):
         if is_browsable_api:
             return ', '.join(tag_names)
 
-        # JSON or other API formats → return a list
         return list(tag_names)
 
 
 class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
-    # removed: author_id = SerializerMethodField()
-    # replaced by:
     author = serializers.ReadOnlyField(source='author.username')
 
-    # the tag look fix implemented
     tags = TagField(style={'base_template': 'textarea.html'})
 
     class Meta:
@@ -188,8 +176,8 @@ class CommentSerializer(serializers.ModelSerializer):
             'id',
             'article',
             'content',
-            'author',        # Hidden field, filled automatically
-            'author_name',   # Readable name shown in response
+            'author',
+            'author_name',
             'created_at',
             'updated_at',
             'reply_to',
@@ -202,6 +190,5 @@ class CommentSerializer(serializers.ModelSerializer):
         return "Deleted User"
 
     def update(self, instance, validated_data):
-        # Remove author if it was accidentally included
         validated_data.pop('author', None)
         return super().update(instance, validated_data)

@@ -103,7 +103,6 @@ class CanManageComment(BasePermission):
             )
 
         if request.method in ['PUT', 'PATCH', 'DELETE']:
-            # Allow authenticated users to reach object-level permission check
             return request.user and request.user.is_authenticated
 
         return False
@@ -113,9 +112,6 @@ class CanManageComment(BasePermission):
             return True
 
         if request.method in ['PUT', 'PATCH', 'DELETE']:
-            # Only allow if user is:
-            # - The comment's author (for Members)
-            # - A Moderator or Editor (any comment)
             if request.user.groups.filter(name='Members').exists():
                 return obj.author == request.user
 

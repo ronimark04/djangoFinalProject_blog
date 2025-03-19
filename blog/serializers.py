@@ -1,3 +1,4 @@
+from taggit.serializers import TagListSerializerField
 from .models import *
 from django.contrib.auth.models import User
 from rest_framework import serializers
@@ -124,14 +125,13 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class TagField(TagListSerializerField):
-    # fixes tags looking like ['tag1 tag2']
     def to_internal_value(self, value):
         request = self.context.get('request')
 
         is_browsable_api = (
             request
             and hasattr(request, 'accepted_renderer')
-            and request.accepted_renderer.format == 'api'
+            and request.accepted_renderer.format == 'html'
         )
 
         if (
@@ -140,9 +140,26 @@ class TagField(TagListSerializerField):
             and len(value) == 1
             and isinstance(value[0], str)
         ):
-            value = value[0].split()
+            value = [tag.strip() for tag in value[0].split(',')]
 
         return super().to_internal_value(value)
+
+    def to_representation(self, value):
+        request = self.context.get('request')
+
+        is_browsable_api = (
+            request
+            and hasattr(request, 'accepted_renderer')
+            and request.accepted_renderer.format == 'html'
+        )
+
+        tag_names = value.names() if hasattr(value, 'names') else value
+
+        if is_browsable_api:
+            return ', '.join(tag_names)
+
+        # JSON or other API formats → return a list
+        return list(tag_names)
 
 
 class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
@@ -183,3 +200,8 @@ class CommentSerializer(serializers.ModelSerializer):
         if obj.author:
             return obj.author.username
         return "Deleted User"
+
+    def update(self, instance, validated_data):
+        # Remove author if it was accidentally included
+        validated_data.pop('author', None)
+        return super().update(instance, validated_data)

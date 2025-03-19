@@ -9,17 +9,38 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import *
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, DjangoModelPermissions, BasePermission, SAFE_METHODS
 from blog.utils.try_parse_int import try_parse_int
+from rest_framework.decorators import action
+
+
+class IsEditorOrModerator(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+
+        if request.method in ['PUT', 'PATCH']:
+            return request.user.groups.filter(name__in=['Moderators', 'Editors']).exists()
+
+        if request.method in ['POST', 'DELETE']:
+            return request.user.groups.filter(name='Moderators').exists()
+
+        return False
+
+
+class IsAdminOnly(BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_staff
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAdminOnly]
 
 
 class RegisterView(APIView):
-    permission_classes = []  # Open to unauthenticated users
+    permission_classes = []
     serializer_class = RegisterSerializer
 
     def post(self, request):
@@ -39,18 +60,74 @@ class RegisterView(APIView):
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsEditorOrModerator, DjangoModelPermissions]
     filter_backends = [SearchFilter]
     search_fields = ['title', 'content', 'tags__name']
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    def get_serializer_class(self):
+        if self.action == 'comments':
+            return CommentSerializer
+        return super().get_serializer_class()
+
+    @action(detail=True, methods=['get', 'post'], url_path='comments')
+    def comments(self, request, pk=None):
+        article = self.get_object()
+
+        if request.method == 'GET':
+            comments = article.comments.all()
+            serializer = CommentSerializer(comments, many=True)
+            return Response(serializer.data)
+
+        elif request.method == 'POST':
+            serializer = CommentSerializer(
+                data=request.data, context={'request': request})
+            if serializer.is_valid():
+                serializer.save(article=article, author=request.user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CanManageComment(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+
+        if request.method == 'POST':
+            return request.user and request.user.is_authenticated and (
+                request.user.groups.filter(
+                    name__in=['Members', 'Moderators']).exists()
+            )
+
+        if request.method in ['PUT', 'PATCH', 'DELETE']:
+            # Allow authenticated users to reach object-level permission check
+            return request.user and request.user.is_authenticated
+
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+
+        if request.method in ['PUT', 'PATCH', 'DELETE']:
+            # Only allow if user is:
+            # - The comment's author (for Members)
+            # - A Moderator or Editor (any comment)
+            if request.user.groups.filter(name='Members').exists():
+                return obj.author == request.user
+
+            return request.user.groups.filter(name__in=['Moderators', 'Editors']).exists()
+
+        return False
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, CanManageComment]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

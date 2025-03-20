@@ -4,6 +4,7 @@ import os
 from django.contrib.auth.models import User, Group
 from blog.models import Article, Comment, Profile
 from taggit.models import Tag
+from decouple import config
 
 
 def run_seed():
@@ -19,7 +20,8 @@ def run_seed():
     user_specs = [
         {
             'username': 'mod1',
-            'password': 'modpass123',
+            'password': config('MOD_PASS'),
+            'email': 'jmarkson@email.com',
             'group': 'Moderators',
             'first_name': 'John',
             'last_name': 'Markson',
@@ -29,7 +31,8 @@ def run_seed():
         },
         {
             'username': 'mod2',
-            'password': 'modpass123',
+            'password': config('MOD_PASS'),
+            'email': 'dreed@email.com',
             'group': 'Moderators',
             'first_name': 'David',
             'last_name': 'Reed',
@@ -39,7 +42,8 @@ def run_seed():
         },
         {
             'username': 'editor1',
-            'password': 'editpass123',
+            'password': config('EDITOR_PASS'),
+            'email': 'cnguyen@email.com',
             'group': 'Editors',
             'first_name': 'Clara',
             'last_name': 'Nguyen',
@@ -49,7 +53,8 @@ def run_seed():
         },
         {
             'username': 'member1',
-            'password': 'mempass123',
+            'password': config('MEMBER_PASS'),
+            'email': 'aturner@email.com',
             'group': 'Members',
             'first_name': 'Alex',
             'last_name': 'Turner',
@@ -59,7 +64,8 @@ def run_seed():
         },
         {
             'username': 'member2',
-            'password': 'mempass123',
+            'password': config('MEMBER_PASS'),
+            'email': 'nromero@email.com',
             'group': 'Members',
             'first_name': 'Nina',
             'last_name': 'Romero',
@@ -69,7 +75,8 @@ def run_seed():
         },
         {
             'username': 'member3',
-            'password': 'mempass123',
+            'password': config('MEMBER_PASS'),
+            'email': 'lbanks@email.com',
             'group': 'Members',
             'first_name': 'Leo',
             'last_name': 'Banks',
@@ -84,6 +91,7 @@ def run_seed():
         user, created = User.objects.get_or_create(username=spec['username'])
         if created:
             user.set_password(spec['password'])
+            user.email = spec['email']
             user.first_name = spec['first_name']
             user.last_name = spec['last_name']
             user.save()

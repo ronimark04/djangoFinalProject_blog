@@ -531,6 +531,14 @@
         "documentation": {}
     },
     {
+        "label": "PageNumberPagination",
+        "importPath": "rest_framework.pagination",
+        "description": "rest_framework.pagination",
+        "isExtraImport": true,
+        "detail": "rest_framework.pagination",
+        "documentation": {}
+    },
+    {
         "label": "get_asgi_application",
         "importPath": "django.core.asgi",
         "description": "django.core.asgi",
@@ -601,6 +609,15 @@
         "importPath": "sys",
         "description": "sys",
         "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
         "documentation": {}
     },
     {
@@ -811,11 +828,20 @@
         "documentation": {}
     },
     {
+        "label": "ArticlePagination",
+        "kind": 6,
+        "importPath": "backend.blog.views",
+        "description": "backend.blog.views",
+        "peekOfCode": "class ArticlePagination(PageNumberPagination):\n    page_size = 3\nclass ArticleViewSet(viewsets.ModelViewSet):\n    queryset = Article.objects.all()\n    serializer_class = ArticleSerializer\n    permission_classes = [IsAuthenticatedOrReadOnly,\n                          IsEditorOrModerator, DjangoModelPermissions]\n    pagination_class = ArticlePagination\n    filter_backends = [SearchFilter]\n    search_fields = ['title', 'content', 'tags__name']",
+        "detail": "backend.blog.views",
+        "documentation": {}
+    },
+    {
         "label": "ArticleViewSet",
         "kind": 6,
         "importPath": "backend.blog.views",
         "description": "backend.blog.views",
-        "peekOfCode": "class ArticleViewSet(viewsets.ModelViewSet):\n    queryset = Article.objects.all()\n    serializer_class = ArticleSerializer\n    permission_classes = [IsAuthenticatedOrReadOnly,\n                          IsEditorOrModerator, DjangoModelPermissions]\n    filter_backends = [SearchFilter]\n    search_fields = ['title', 'content', 'tags__name']\n    def perform_create(self, serializer):\n        serializer.save(author=self.request.user)\n    def get_serializer_class(self):",
+        "peekOfCode": "class ArticleViewSet(viewsets.ModelViewSet):\n    queryset = Article.objects.all()\n    serializer_class = ArticleSerializer\n    permission_classes = [IsAuthenticatedOrReadOnly,\n                          IsEditorOrModerator, DjangoModelPermissions]\n    pagination_class = ArticlePagination\n    filter_backends = [SearchFilter]\n    search_fields = ['title', 'content', 'tags__name']\n    def perform_create(self, serializer):\n        serializer.save(author=self.request.user)",
         "detail": "backend.blog.views",
         "documentation": {}
     },
@@ -959,7 +985,7 @@
         "kind": 5,
         "importPath": "backend.djangoFinalProject_blog.settings",
         "description": "backend.djangoFinalProject_blog.settings",
-        "peekOfCode": "REST_FRAMEWORK = {\n    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',\n    'PAGE_SIZE': 3,\n    'DEFAULT_AUTHENTICATION_CLASSES': [\n        'rest_framework_simplejwt.authentication.JWTAuthentication',\n        'rest_framework.authentication.SessionAuthentication'\n    ],\n    'DEFAULT_FILTER_BACKENDS': [\n        'rest_framework.filters.SearchFilter',\n    ]",
+        "peekOfCode": "REST_FRAMEWORK = {\n    'DEFAULT_AUTHENTICATION_CLASSES': [\n        'rest_framework_simplejwt.authentication.JWTAuthentication',\n        'rest_framework.authentication.SessionAuthentication'\n    ],\n    'DEFAULT_FILTER_BACKENDS': [\n        'rest_framework.filters.SearchFilter',\n    ]\n}\nLOGIN_REDIRECT_URL = '/api/'",
         "detail": "backend.djangoFinalProject_blog.settings",
         "documentation": {}
     },
@@ -1087,6 +1113,42 @@
         "description": "backend.manage",
         "peekOfCode": "def main():\n    \"\"\"Run administrative tasks.\"\"\"\n    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'djangoFinalProject_blog.settings')\n    try:\n        from django.core.management import execute_from_command_line\n    except ImportError as exc:\n        raise ImportError(\n            \"Couldn't import Django. Are you sure it's installed and \"\n            \"available on your PYTHONPATH environment variable? Did you \"\n            \"forget to activate a virtual environment?\"",
         "detail": "backend.manage",
+        "documentation": {}
+    },
+    {
+        "label": "_Known",
+        "kind": 6,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _Known:\n    def __init__(self):\n        self.key = []\n        self.value = []\nclass _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    keys = []\n    i = 0",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "_String",
+        "kind": 6,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    keys = []\n    i = 0\n    for _ in value:\n        keys.append(i)\n        i += 1\n    return keys",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "parse",
+        "kind": 2,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "def parse(value, *args, **kwargs):\n    json = _json.loads(value, *args, **kwargs)\n    wrapped = []\n    for value in json:\n        wrapped.append(_wrap(value))\n    input = []\n    for value in wrapped:\n        if isinstance(value, _String):\n            input.append(value.value)\n        else:",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "stringify",
+        "kind": 2,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "def stringify(value, *args, **kwargs):\n    known = _Known()\n    input = []\n    output = []\n    i = int(_index(known, input, value))\n    while i < len(input):\n        output.append(_transform(known, input, input[i]))\n        i += 1\n    return _json.dumps(output, *args, **kwargs)",
+        "detail": "frontend.node_modules.flatted.python.flatted",
         "documentation": {}
     }
 ]

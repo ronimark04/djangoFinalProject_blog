@@ -12,6 +12,7 @@ from .serializers import *
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, DjangoModelPermissions, BasePermission, SAFE_METHODS
 from blog.utils.try_parse_int import try_parse_int
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 
 
 class IsEditorOrModerator(BasePermission):
@@ -57,11 +58,16 @@ class RegisterView(APIView):
         }, status=status.HTTP_201_CREATED)
 
 
+class ArticlePagination(PageNumberPagination):
+    page_size = 3
+
+
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
     permission_classes = [IsAuthenticatedOrReadOnly,
                           IsEditorOrModerator, DjangoModelPermissions]
+    pagination_class = ArticlePagination
     filter_backends = [SearchFilter]
     search_fields = ['title', 'content', 'tags__name']
 

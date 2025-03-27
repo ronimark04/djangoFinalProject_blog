@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import *
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, DjangoModelPermissions, BasePermission, SAFE_METHODS
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, DjangoModelPermissions, BasePermission, SAFE_METHODS, AllowAny
 from blog.utils.try_parse_int import try_parse_int
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -65,11 +65,19 @@ class ArticlePagination(PageNumberPagination):
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly,
-                          IsEditorOrModerator, DjangoModelPermissions]
     pagination_class = ArticlePagination
     filter_backends = [SearchFilter]
     search_fields = ['title', 'content', 'tags__name']
+
+    def get_permissions(self):
+        if self.request.user.is_superuser:
+            return []
+
+        if self.action in ["list", "retrieve"]:
+            return [AllowAny()]
+        elif self.action in ["create", "update", "partial_update", "destroy"]:
+            return [IsAuthenticatedOrReadOnly(), IsEditorOrModerator(), DjangoModelPermissions()]
+        return super().get_permissions()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -129,7 +137,13 @@ class CanManageComment(BasePermission):
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, CanManageComment]
+
+
+    def get_permissions(self):
+        if self.request.user.is_superuser:
+            return []
+
+        return [IsAuthenticatedOrReadOnly(), CanManageComment()]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

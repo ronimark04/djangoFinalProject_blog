@@ -1,7 +1,8 @@
 from django.core.files import File
 from blog.models import Profile
 import os
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, Permission
+from django.contrib.contenttypes.models import ContentType
 from blog.models import Article, Comment, Profile
 from taggit.models import Tag
 from decouple import config
@@ -10,12 +11,34 @@ from decouple import config
 def run_seed():
     print("Running initial data seed...")
 
-    group_names = ['Moderators', 'Editors', 'Members']
+    group_permissions = {
+        "Moderators": [
+            "add_article", "change_article", "delete_article",
+            "add_comment", "change_comment", "delete_comment",
+        ],
+        "Editors": [
+            "change_article",
+            "change_comment",
+        ],
+        "Members": [
+            "add_comment",
+        ]
+    }
+
     groups = {}
-    for name in group_names:
+    for name, permissions in group_permissions.items():
         group, _ = Group.objects.get_or_create(name=name)
+        for perm_code in permissions:
+            try:
+                model_name = perm_code.split("_")[1]
+                content_type = ContentType.objects.get(model=model_name)
+                permission = Permission.objects.get(codename=perm_code, content_type=content_type)
+                group.permissions.add(permission)
+            except Permission.DoesNotExist:
+                print(f"Warning: Permission '{perm_code}' not found.")
+        group.save()
         groups[name] = group
-    print("Groups created or confirmed.")
+    print("Groups created or confirmed with permissions.")
 
     user_specs = [
         {

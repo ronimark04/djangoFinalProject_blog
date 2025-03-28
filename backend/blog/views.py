@@ -97,11 +97,25 @@ class ArticleViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             comments = article.comments.all()
             serializer = CommentSerializer(comments, many=True)
-            return Response(serializer.data)
+
+            # tree structure:
+            comments_dict = {comment["id"]: comment for comment in serializer.data}
+            root_comments = []
+            for comment in serializer.data:
+                parent_id = comment["reply_to"]
+                if parent_id is None:
+                    root_comments.append(comment)
+                else:
+                    parent = comments_dict.get(parent_id)
+                    if parent:
+                        if "replies" not in parent:
+                            parent["replies"] = []
+                        parent["replies"].append(comment)
+
+            return Response(root_comments)
 
         elif request.method == 'POST':
-            serializer = CommentSerializer(
-                data=request.data, context={'request': request})
+            serializer = CommentSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save(article=article, author=request.user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -154,7 +168,6 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    #TODO: comments in article/id/comments not displayd in tree structure
     def list(self, request, *args, **kwargs):
         # present comments in a tree structure:
         res = super().list(request, *args, **kwargs)

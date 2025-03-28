@@ -14,6 +14,8 @@ import os
 from pathlib import Path
 from decouple import config
 
+BASE_BACKEND_URL = config("BASE_BACKEND_URL", default="http://127.0.0.1:8000")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

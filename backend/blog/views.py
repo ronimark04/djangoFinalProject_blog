@@ -87,6 +87,9 @@ class ArticleViewSet(viewsets.ModelViewSet):
             return CommentSerializer
         return super().get_serializer_class()
 
+    def get_serializer_context(self):
+        return {"request": self.request}
+
     @action(detail=True, methods=['get', 'post'], url_path='comments')
     def comments(self, request, pk=None):
         article = self.get_object()
@@ -145,9 +148,13 @@ class CommentViewSet(viewsets.ModelViewSet):
 
         return [IsAuthenticatedOrReadOnly(), CanManageComment()]
 
+    def get_serializer_context(self):
+        return {"request": self.request}
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    #TODO: comments in article/id/comments not displayd in tree structure
     def list(self, request, *args, **kwargs):
         # present comments in a tree structure:
         res = super().list(request, *args, **kwargs)

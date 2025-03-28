@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { getAllArticles, getComments } from "../services/articleService";
-import { useNavigate } from "react-router-dom";
+import { getArticlesByTag, getComments } from "../services/articleService";
+import { useNavigate, useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-function Home() {
+function TagPage() {
+    const { tag } = useParams();
     const [articles, setArticles] = useState([]);
     const [nextPage, setNextPage] = useState(null);
     const [prevPage, setPrevPage] = useState(null);
@@ -12,7 +13,7 @@ function Home() {
 
     const fetchArticles = (url = null) => {
         setIsLoading(true);
-        getAllArticles(url)
+        getArticlesByTag(tag, url)
             .then((res) => {
                 setArticles(res.data.results);
                 setNextPage(res.data.next);
@@ -24,11 +25,11 @@ function Home() {
 
     useEffect(() => {
         fetchArticles();
-    }, []);
+    }, [tag]);
 
     return (
         <div className="container mt-4">
-            <h1 className="mb-4">Latest Articles</h1>
+            <h1 className="mb-4"><span className="text-primary">#{tag}</span> Articles</h1>
 
             {isLoading ? (
                 <p>Loading articles...</p>
@@ -92,4 +93,4 @@ function ArticlePreview({ article, navigate }) {
     );
 }
 
-export default Home;
+export default TagPage;

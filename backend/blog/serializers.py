@@ -155,20 +155,30 @@ class TagField(TagListSerializerField):
 
 class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
-
+    author_profile_pic = serializers.SerializerMethodField()
     tags = TagField(style={'base_template': 'textarea.html'})
 
     class Meta:
         model = Article
-        fields = '__all__'
+        fields = "__all__"
 
     def get_author_id(self, obj):
         return obj.author.id
+
+    def get_author_profile_pic(self, obj):
+        profile = Profile.objects.filter(user=obj.author).first()
+        if profile and profile.profile_pic:
+            request = self.context.get("request")
+            return request.build_absolute_uri(profile.profile_pic.url) if request else profile.profile_pic.url
+        return None
+
+
 
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
     author_name = serializers.SerializerMethodField()
+    author_profile_pic = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -178,6 +188,7 @@ class CommentSerializer(serializers.ModelSerializer):
             'content',
             'author',
             'author_name',
+            'author_profile_pic',
             'created_at',
             'updated_at',
             'reply_to',
@@ -188,6 +199,12 @@ class CommentSerializer(serializers.ModelSerializer):
         if obj.author:
             return obj.author.username
         return "Deleted User"
+    
+    def get_author_profile_pic(self, obj):
+        profile = Profile.objects.filter(user=obj.author).first()
+        if profile and profile.profile_pic:
+            return profile.profile_pic.url
+        return None
 
     def update(self, instance, validated_data):
         validated_data.pop('author', None)

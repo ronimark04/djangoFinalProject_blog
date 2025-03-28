@@ -16,3 +16,7 @@ export function getArticlesByTag(tag, url = null) {
     const searchUrl = url || `/api/articles/?search=${tag}`;
     return api.get(searchUrl);
 }
+
+export function getArticlesBySearch(query) {
+    return api.get(`/api/articles/?search=${query}`);
+}

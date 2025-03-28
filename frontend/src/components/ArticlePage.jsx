@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./style/ArticlePage.css";
 
-// Use import.meta.env for Vite-based projects
 const BASE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
 
 function ArticlePage() {
@@ -21,34 +20,38 @@ function ArticlePage() {
 
         getComments(id)
             .then((res) => {
-                const updatedComments = res.data.map(comment => ({
-                    ...comment,
-                    author_profile_pic: comment.author_profile_pic
-                        ? `${BASE_BACKEND_URL}${comment.author_profile_pic}`
-                        : "/default_profile.png"
-                }));
-                setComments(updatedComments);
+                const processComments = (comments) => {
+                    return comments.map(comment => ({
+                        ...comment,
+                        author_profile_pic: comment.author_profile_pic
+                            ? `${BASE_BACKEND_URL}${comment.author_profile_pic}`
+                            : "/default_profile.png",
+                        replies: comment.replies ? processComments(comment.replies) : [] // Ensure nested replies are processed
+                    }));
+                };
+
+                setComments(processComments(res.data));
             })
             .catch((err) => console.error("Error fetching comments:", err))
             .finally(() => setIsLoading(false));
     }, [id]);
 
-    const renderCommentsTree = (comments, parentId = null) => {
-        return comments
-            .filter(comment => comment.reply_to === parentId)
-            .map(comment => (
-                <div key={comment.id} className="comment-container">
-                    <div className="comment">
-                        <img src={comment.author_profile_pic} alt="Profile" className="comment-avatar" />
-                        <div className="comment-body">
-                            <p className="comment-author">{comment.author_name} <span className="comment-time">{new Date(comment.created_at).toLocaleString()}</span></p>
-                            <p className="comment-content">{comment.content}</p>
-                            <button className="btn btn-link reply-btn">Reply</button>
-                        </div>
+    const renderCommentsTree = (comments) => {
+        return comments.map(comment => (
+            <div key={comment.id} className="comment-container">
+                <div className="comment">
+                    <img src={comment.author_profile_pic} alt="Profile" className="comment-avatar" />
+                    <div className="comment-body">
+                        <p className="comment-author">{comment.author_name} <span className="comment-time">{new Date(comment.created_at).toLocaleString()}</span></p>
+                        <p className="comment-content">{comment.content}</p>
+                        <button className="btn btn-link reply-btn">💬 Reply</button>
                     </div>
-                    <div className="replies">{renderCommentsTree(comments, comment.id)}</div>
                 </div>
-            ));
+                {comment.replies.length > 0 && (
+                    <div className="replies">{renderCommentsTree(comment.replies)}</div>
+                )}
+            </div>
+        ));
     };
 
     return (

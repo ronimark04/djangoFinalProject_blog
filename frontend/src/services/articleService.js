@@ -1,21 +1,18 @@
-import axios from "axios";
-
-const BASE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
-const api = `${BASE_BACKEND_URL}/api/articles/`;
+import api from "./api";
 
 export function getAllArticles(url = null) {
-    return axios.get(url || api);
+    return api.get(url || "/api/articles/");
 }
 
 export function getArticleById(id) {
-    return axios.get(`${api}${id}/`);
+    return api.get(`/api/articles/${id}/`);
 }
 
 export function getComments(id) {
-    return axios.get(`${api}${id}/comments/`);
+    return api.get(`/api/articles/${id}/comments/`);
 }
 
 export function getArticlesByTag(tag, url = null) {
-    const searchUrl = url || `${api}?search=${tag}`;
-    return axios.get(searchUrl);
+    const searchUrl = url || `/api/articles/?search=${tag}`;
+    return api.get(searchUrl);
 }

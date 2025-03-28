@@ -9,12 +9,18 @@ from taggit.serializers import TagListSerializerField, TaggitSerializer
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    remove_profile_pic = serializers.BooleanField(
-        write_only=True, required=False)
+    remove_profile_pic = serializers.BooleanField(write_only=True, required=False)
+    profile_pic = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
         fields = ['bio', 'profile_pic', 'remove_profile_pic', 'birth_date']
+
+    def get_profile_pic(self, obj):
+        if obj.profile_pic:
+            return obj.profile_pic.url
+        return None
+
 
 
 class UserSerializer(serializers.ModelSerializer):

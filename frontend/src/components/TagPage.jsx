@@ -59,13 +59,10 @@ function ArticlePreview({ article, navigate }) {
     useEffect(() => {
         getComments(article.id)
             .then((res) => {
-                if (Array.isArray(res.data)) {
-                    setCommentCount(res.data.length);
-                } else if (res.data.results) {
-                    setCommentCount(res.data.results.length);
-                } else {
-                    setCommentCount(0);
-                }
+                const countComments = (comments) => {
+                    return comments.reduce((count, comment) => count + 1 + countComments(comment.replies || []), 0);
+                };
+                setCommentCount(countComments(res.data));
             })
             .catch((err) => console.error(`Error fetching comments for ${article.id}:`, err));
     }, [article.id]);

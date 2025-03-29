@@ -6,22 +6,26 @@ from django.contrib.contenttypes.models import ContentType
 from blog.models import Article, Comment, Profile
 from taggit.models import Tag
 from decouple import config
+from django.db.models.signals import post_save
+from blog.signals import assign_member_group
 
 
 def run_seed():
+    post_save.disconnect(assign_member_group, sender=User)
     print("Running initial data seed...")
 
     group_permissions = {
         "Moderators": [
-            "add_article", "change_article", "delete_article",
-            "add_comment", "change_comment", "delete_comment",
+            "view_article", "add_article", "change_article", "delete_article",
+            "view_comment", "add_comment", "change_comment", "delete_comment",
         ],
         "Editors": [
-            "change_article",
+            "view_article", "change_article",
             "change_comment",
         ],
         "Members": [
-            "add_comment",
+            "view_article",
+            "view_comment", "add_comment", "delete_comment",
         ]
     }
 
@@ -229,5 +233,6 @@ User profile management is a fundamental feature, and our implementation demonst
             author=member_users[(i + 2) % 3],
             reply_to=comment1
         )
-
+        
+    post_save.connect(assign_member_group, sender=User)
     print("Seeding complete.")

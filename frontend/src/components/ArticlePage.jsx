@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getArticleById, getComments } from "../services/articleService";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./style/ArticlePage.css";
 
@@ -8,6 +8,7 @@ const BASE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8
 
 function ArticlePage() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [article, setArticle] = useState(null);
     const [comments, setComments] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -26,7 +27,7 @@ function ArticlePage() {
                         author_profile_pic: comment.author_profile_pic
                             ? `${BASE_BACKEND_URL}${comment.author_profile_pic}`
                             : "/default_profile.png",
-                        replies: comment.replies ? processComments(comment.replies) : [] // Ensure nested replies are processed
+                        replies: comment.replies ? processComments(comment.replies) : []
                     }));
                 };
 
@@ -66,7 +67,10 @@ function ArticlePage() {
                     <p>
                         <strong>Tags: </strong>
                         {article.tags.map((tag, index) => (
-                            <span key={index} className="badge bg-secondary me-1">{tag}</span>
+                            <span key={index} className="badge bg-secondary me-1" style={{ cursor: "pointer" }}
+                                onClick={() => navigate(`/tag/${tag}`)}>
+                                {tag}
+                            </span>
                         ))}
                     </p>
 

@@ -25,14 +25,23 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(required=False)
+    is_superuser = serializers.BooleanField(read_only=True)
+    groups = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name',
-                  'last_name', 'password', 'profile']
+                  'last_name', 'password', 'profile', 'is_superuser', 'groups', 'permissions']
         extra_kwargs = {
             'password': {'write_only': True}
         }
+
+    def get_groups(self, obj):
+        return [group.name for group in obj.groups.all()]
+
+    def get_permissions(self, obj):
+        return list(obj.get_all_permissions())
 
     def create(self, validated_data):
         profile_data = validated_data.pop('profile', {})

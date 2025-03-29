@@ -1,4 +1,6 @@
 import axios from "axios";
+import api from "./api";
+import { jwtDecode } from "jwt-decode";
 
 const BASE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
 
@@ -61,4 +63,23 @@ export function registerUser(values) {
             console.error("Registration failed:", error);
             throw error;
         });
+}
+
+
+export function getUserProfile(userId) {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+        return Promise.reject("No access token found.");
+    }
+
+    try {
+        return api.get(`${BASE_BACKEND_URL}/api/users/${userId}/`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+    } catch (error) {
+        return Promise.reject("Invalid access token.");
+    }
 }

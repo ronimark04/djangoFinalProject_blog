@@ -20,3 +20,28 @@ export function getArticlesByTag(tag, url = null) {
 export function getArticlesBySearch(query) {
     return api.get(`/api/articles/?search=${query}`);
 }
+
+export function createArticle(articleData) {
+    return api.post(`/api/articles/`, articleData);
+}
+
+export function editArticle(id, updatedData) {
+    const token = localStorage.getItem("access_token");
+
+    return api.put(`/api/articles/${id}/`, updatedData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+    });
+}
+
+export function deleteArticle(id) {
+    const token = localStorage.getItem("access_token");
+
+    return api.delete(`/api/articles/${id}/`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+}

@@ -134,6 +134,7 @@ TAGGIT_CASE_INSENSITIVE = True
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'OPTIONS': {'user_attributes': ('username', 'email')},
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',

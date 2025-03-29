@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { getAllArticles, getComments } from "../services/articleService";
+import { useEffect, useState, useContext } from "react";
+import { getAllArticles, getComments, deleteArticle } from "../services/articleService";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function Home() {
@@ -9,6 +10,7 @@ function Home() {
     const [prevPage, setPrevPage] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
+    const { groups, isSuperuser } = useContext(AuthContext);
 
     const fetchArticles = (url = null) => {
         setIsLoading(true);
@@ -26,16 +28,33 @@ function Home() {
         fetchArticles();
     }, []);
 
+    const handleDelete = (id) => {
+        if (window.confirm("Are you sure you want to delete this article?")) {
+            deleteArticle(id)
+                .then(() => {
+                    setArticles((prevArticles) => prevArticles.filter(article => article.id !== id));
+                })
+                .catch(err => console.error("Error deleting article:", err));
+        }
+    };
+
     return (
         <div className="container mt-4">
-            <h1 className="mb-4">Latest Articles</h1>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h1>Latest Articles</h1>
+                {(groups.includes("Moderators") || isSuperuser) && (
+                    <button className="btn btn-success" onClick={() => navigate("/create-article")}>
+                        + Create New Article
+                    </button>
+                )}
+            </div>
 
             {isLoading ? (
                 <p>Loading articles...</p>
             ) : (
                 <div className="row">
                     {articles.map((article) => (
-                        <ArticlePreview key={article.id} article={article} navigate={navigate} />
+                        <ArticlePreview key={article.id} article={article} navigate={navigate} groups={groups} onDelete={handleDelete} />
                     ))}
                 </div>
             )}
@@ -52,8 +71,9 @@ function Home() {
     );
 }
 
-function ArticlePreview({ article, navigate }) {
+function ArticlePreview({ article, navigate, groups, onDelete }) {
     const [commentCount, setCommentCount] = useState(null);
+    const { isSuperuser } = useContext(AuthContext);
 
     useEffect(() => {
         getComments(article.id)
@@ -68,11 +88,12 @@ function ArticlePreview({ article, navigate }) {
 
     return (
         <div className="col-md-4 mb-3">
-            <div className="card shadow-sm" onClick={() => navigate(`/article/${article.id}`)} style={{ cursor: "pointer" }}>
-                <div className="card-body">
+            <div className="card shadow-sm" style={{ cursor: "pointer" }}>
+                <div className="card-body" onClick={() => navigate(`/article/${article.id}`)}>
                     <h5 className="card-title">{article.title}</h5>
                     <h6 className="card-subtitle mb-2 text-muted">By {article.author}</h6>
                     <p className="card-text">{article.content.split(" ").slice(0, 50).join(" ")}...</p>
+
                     <p>
                         <strong>Tags: </strong>
                         {article.tags.map((tag, index) => (
@@ -82,7 +103,22 @@ function ArticlePreview({ article, navigate }) {
                             </span>
                         ))}
                     </p>
+
                     <p className="text-muted">💬 {commentCount !== null ? commentCount : "Loading..."} comments</p>
+
+                    <div className="d-flex justify-content-between mt-3">
+                        {(groups.includes("Editors") || groups.includes("Moderators") || isSuperuser) && (
+                            <button className="btn btn-warning btn-sm" onClick={(e) => { e.stopPropagation(); navigate(`/edit-article/${article.id}`); }}>
+                                ✏️ Edit
+                            </button>
+                        )}
+
+                        {(groups.includes("Moderators") || isSuperuser) && (
+                            <button className="btn btn-danger btn-sm" onClick={(e) => { e.stopPropagation(); onDelete(article.id); }}>
+                                🗑️ Delete
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

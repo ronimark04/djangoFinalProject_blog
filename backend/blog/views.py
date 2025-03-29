@@ -34,10 +34,19 @@ class IsAdminOnly(BasePermission):
         return request.user and request.user.is_staff
 
 
+class IsSelfOrSuperuser(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return request.user == obj or request.user.is_superuser
+
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminOnly]
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [IsAuthenticated(), IsSelfOrSuperuser()]  
+        return [IsAdminOnly()]
 
 
 class RegisterView(APIView):

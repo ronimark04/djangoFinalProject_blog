@@ -10,6 +10,62 @@ function Register() {
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
+    // password validation logic to match django's requirements including UserAttributeSimilarityValidator
+    const passwordValidation = Yup.string()
+        .min(8, "Password must be at least 8 characters long")
+        .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+        .matches(/\d/, "Password must contain at least one number")
+        .matches(/[\W_]/, "Password must contain at least one special character")
+        .notOneOf(["password", "12345678", "qwerty123"], "Password is too common")
+        .test(
+            "not-similar",
+            "Password is too similar to username or email",
+            function (value) {
+                const { username, email } = this.parent;
+                if (!value || !username || !email) return true;
+
+                const lowerPass = value.toLowerCase();
+                const lowerUsername = username.toLowerCase();
+                const lowerEmail = email.split("@")[0].toLowerCase();
+
+                if (lowerPass === lowerUsername || lowerPass === lowerEmail) {
+                    return false;
+                }
+
+                if (lowerPass.includes(lowerUsername) || lowerPass.includes(lowerEmail)) {
+                    return false;
+                }
+
+                const levenshteinDistance = (a, b) => {
+                    const dp = Array(a.length + 1)
+                        .fill(null)
+                        .map(() => Array(b.length + 1).fill(null));
+
+                    for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+                    for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+
+                    for (let i = 1; i <= a.length; i++) {
+                        for (let j = 1; j <= b.length; j++) {
+                            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                            dp[i][j] = Math.min(
+                                dp[i - 1][j] + 1,
+                                dp[i][j - 1] + 1,
+                                dp[i - 1][j - 1] + cost
+                            );
+                        }
+                    }
+                    return dp[a.length][b.length];
+                };
+
+                if (levenshteinDistance(lowerPass, lowerUsername) <= 2) return false;
+                if (levenshteinDistance(lowerPass, lowerEmail) <= 2) return false;
+
+                return true;
+            }
+        )
+        .required("Password is required");
+
     const formik = useFormik({
         initialValues: {
             username: "",
@@ -25,15 +81,15 @@ function Register() {
         validationSchema: Yup.object({
             username: Yup.string().required("Username is required"),
             email: Yup.string().email("Invalid email address").required("Email is required"),
-            password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+            password: passwordValidation,
             password2: Yup.string()
                 .oneOf([Yup.ref("password"), null], "Passwords must match")
-                .required("Confirm Password is required"),
+                .required("Please confirm your password"),
             first_name: Yup.string(),
             last_name: Yup.string(),
             bio: Yup.string(),
             birth_date: Yup.date(),
-            profile_pic: Yup.mixed()
+            profile_pic: Yup.mixed().nullable()
         }),
         onSubmit: async (values, { setSubmitting, setErrors }) => {
             try {
@@ -57,7 +113,6 @@ function Register() {
                         {formik.errors.submit && <p className="text-danger text-center">{formik.errors.submit}</p>}
                         <form onSubmit={formik.handleSubmit} encType="multipart/form-data">
                             <div className="row">
-                                {/* Left Column */}
                                 <div className="col-md-6">
                                     <div className="mb-3">
                                         <label className="form-label">Username</label>
@@ -97,7 +152,6 @@ function Register() {
                                     </div>
                                 </div>
 
-                                {/* Right Column */}
                                 <div className="col-md-6">
                                     <div className="mb-3">
                                         <label className="form-label">Bio</label>
@@ -113,13 +167,15 @@ function Register() {
                                             type="file"
                                             className="form-control"
                                             accept="image/*"
-                                            onChange={(event) => formik.setFieldValue("profile_pic", event.target.files[0])}
+                                            onChange={(event) => {
+                                                const file = event.target.files[0] || null;
+                                                formik.setFieldValue("profile_pic", file);
+                                            }}
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Register Button */}
                             <div className="text-center mt-4">
                                 <button type="submit" className="btn btn-primary w-50" disabled={formik.isSubmitting}>
                                     {formik.isSubmitting ? "Registering..." : "Register"}

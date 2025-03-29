@@ -6,6 +6,8 @@ import ArticlePage from './components/ArticlePage'
 import Login from './components/Login'
 import Register from './components/Register'
 import SearchResults from './components/SearchResults'
+import CreateArticle from './components/CreateArticle'
+import EditArticle from './components/EditArticle'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -24,6 +26,8 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/tag/:tag" element={<TagPage />} />
             <Route path="/article/:id" element={<ArticlePage />} />
+            <Route path="/create-article" element={<CreateArticle />} />
+            <Route path="/edit-article/:id" element={<EditArticle />} />
             <Route path="/search/:query" element={<SearchResults />} />
           </Routes>
         </Router>

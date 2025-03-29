@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from "react";
-import { getArticlesByTag, getComments, deleteArticle } from "../services/articleService";
+import { getArticlesByTag, deleteArticle } from "../services/articleService";
+import { getComments } from "../services/commentService";
 import { useNavigate, useParams } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import "bootstrap/dist/css/bootstrap.min.css";

@@ -8,10 +8,6 @@ export function getArticleById(id) {
     return api.get(`/api/articles/${id}/`);
 }
 
-export function getComments(id) {
-    return api.get(`/api/articles/${id}/comments/`);
-}
-
 export function getArticlesByTag(tag, url = null) {
     const searchUrl = url || `/api/articles/?search=${tag}`;
     return api.get(searchUrl);

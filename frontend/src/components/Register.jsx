@@ -5,6 +5,8 @@ import { registerUser } from "../services/userService";
 import AuthContext from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { toast } from "react-toastify";
+
 
 function Register() {
     const { login } = useContext(AuthContext);
@@ -100,6 +102,7 @@ function Register() {
                 setErrors({ submit: "Registration failed. Please try again." });
             } finally {
                 setSubmitting(false);
+                toast("Welcome!");
             }
         }
     });

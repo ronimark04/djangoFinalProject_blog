@@ -4,6 +4,8 @@ import { getComments } from "../services/commentService";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { toast } from "react-toastify";
+
 
 function Home() {
     const [articles, setArticles] = useState([]);
@@ -34,6 +36,7 @@ function Home() {
             deleteArticle(id)
                 .then(() => {
                     setArticles((prevArticles) => prevArticles.filter(article => article.id !== id));
+                    toast("Article Deleted Successfully");
                 })
                 .catch(err => console.error("Error deleting article:", err));
         }
@@ -99,7 +102,7 @@ function ArticlePreview({ article, navigate, groups, onDelete }) {
                         <strong>Tags: </strong>
                         {article.tags.map((tag, index) => (
                             <span key={index} className="badge bg-secondary me-1" style={{ cursor: "pointer" }}
-                                onClick={(e) => { e.stopPropagation(); navigate(`/tag/${tag}`); }}>
+                                onClick={(e) => { e.stopPropagation(); navigate(`/search/${tag}`); }}>
                                 {tag}
                             </span>
                         ))}

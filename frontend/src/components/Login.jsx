@@ -3,6 +3,7 @@ import { loginUser } from "../services/userService";
 import AuthContext from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { toast } from "react-toastify";
 
 function Login() {
     const [username, setUsername] = useState("");
@@ -17,6 +18,7 @@ function Login() {
             const tokens = await loginUser(username, password);
             login(tokens.access, tokens.refresh);
             navigate("/");
+            toast("Welcome back!");
         } catch (err) {
             setError("Invalid username or password");
         }

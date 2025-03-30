@@ -4,6 +4,7 @@ import { getArticleById, editArticle } from "../services/articleService";
 import AuthContext from "../context/AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { toast } from "react-toastify";
 
 function EditArticle() {
     const { id } = useParams();
@@ -37,17 +38,18 @@ function EditArticle() {
         const updatedArticleData = {
             title,
             content,
-            tags: tags.split(",").map(tag => tag.trim()), // Convert comma-separated tags to an array
+            tags: tags.split(",").map(tag => tag.trim()),
         };
 
         try {
             await editArticle(id, updatedArticleData);
-            navigate(`/article/${id}`); // Redirect to article page after update
+            navigate(`/article/${id}`);
         } catch (err) {
             setError("Failed to update article. Please try again.");
             console.error("Error updating article:", err);
         } finally {
             setIsSubmitting(false);
+            toast("Article Updated Successfully");
         }
     };
 

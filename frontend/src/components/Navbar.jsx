@@ -4,6 +4,7 @@ import AuthContext from "../context/AuthContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./style/Navbar.css";
 
+
 function Navbar() {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();

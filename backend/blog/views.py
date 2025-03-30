@@ -72,7 +72,7 @@ class ArticlePagination(PageNumberPagination):
 
 
 class ArticleViewSet(viewsets.ModelViewSet):
-    queryset = Article.objects.all()
+    queryset = Article.objects.all().order_by('-created_at')
     serializer_class = ArticleSerializer
     pagination_class = ArticlePagination
     filter_backends = [SearchFilter]

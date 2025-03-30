@@ -1,6 +1,8 @@
 import { createContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import { getUserProfile } from "../services/userService";
+import { toast } from "react-toastify";
+
 
 const AuthContext = createContext();
 
@@ -65,11 +67,16 @@ export const AuthProvider = ({ children }) => {
         setPermissions([]);
         setIsLoading(false);
 
-        if (window.location.pathname === "/") {
-            window.location.reload();
-        } else {
-            window.location.href = "/";
-        }
+        toast("Logged out successfully");
+
+        setTimeout(() => {
+            if (window.location.pathname === "/") {
+                window.location.reload();
+            } else {
+                window.location.href = "/";
+            }
+        }, 1000);
+
     };
 
 

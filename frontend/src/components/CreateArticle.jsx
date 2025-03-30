@@ -4,6 +4,8 @@ import { createArticle } from "../services/articleService";
 import AuthContext from "../context/AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { toast } from "react-toastify";
+
 
 function CreateArticle() {
     const { user, groups, permissions } = useContext(AuthContext);
@@ -25,17 +27,18 @@ function CreateArticle() {
         const articleData = {
             title,
             content,
-            tags: tags.split(",").map(tag => tag.trim()), // Convert comma-separated tags to an array
+            tags: tags.split(",").map(tag => tag.trim()),
         };
 
         try {
             await createArticle(articleData);
-            navigate("/"); // Redirect to home after successful submission
+            navigate("/");
         } catch (err) {
             setError("Failed to create article. Please try again.");
             console.error("Error creating article:", err);
         } finally {
             setIsSubmitting(false);
+            toast("Article Created Successfully");
         }
     };
 

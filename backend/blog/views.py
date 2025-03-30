@@ -76,7 +76,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
     serializer_class = ArticleSerializer
     pagination_class = ArticlePagination
     filter_backends = [SearchFilter]
-    search_fields = ['title', 'content', 'tags__name']
+    search_fields = ['title', 'content', 'tags__name', 'author']
 
     def get_permissions(self):
         if self.request.user.is_superuser:

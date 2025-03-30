@@ -7,13 +7,11 @@ const api = axios.create({
     baseURL: BASE_BACKEND_URL,
 });
 
-// Automatically refresh token on 401 errors
 api.interceptors.response.use(
     response => response,
     async error => {
         const originalRequest = error.config;
 
-        // If request failed due to expired access token (401)
         if (error.response && error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {

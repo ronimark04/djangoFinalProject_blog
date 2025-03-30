@@ -178,7 +178,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     def list(self, request, *args, **kwargs):
-        # present comments in a tree structure:
+        # tree structure:
         res = super().list(request, *args, **kwargs)
         comments = res.data
         comments_dict = {comment["id"]: comment for comment in comments}
